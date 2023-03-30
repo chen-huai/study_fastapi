@@ -12,3 +12,16 @@ Accept: application/json
 
 GET http://127.0.0.1:8000/test
 Accept: application/json
+
+###
+
+GET http://127.0.0.1:8000/models/model_name
+Accept: application/json
+###
+
+GET http://127.0.0.1:8000/files/files_path
+Accept: application/json
+###
+
+GET http://127.0.0.1:8000/items
+Accept: application/json

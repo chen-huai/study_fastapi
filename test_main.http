@@ -25,3 +25,8 @@ Accept: application/json
 
 GET http://127.0.0.1:8000/items
 Accept: application/json
+
+###
+
+GET http://127.0.0.1:8000/items/item_id
+Accept: application/json

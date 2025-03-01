@@ -43,7 +43,7 @@
       <td>6</td>
       <!-- More columns as needed -->
     </tr>
-  <tr>
+    <tr>
       <td>S2</td>
       <td>5</td>
       <td>6</td>
@@ -84,7 +84,7 @@
       document.addEventListener('mouseup', (event) => {
         if (isMouseDown) {
           isMouseDown = false;
-          calculateSum(event.pageX, event.pageY);  // Calculate sum when mouse is released
+          calculateSum(event.pageX, event.pageY);  // Calculate sum and count when mouse is released
         }
       });
 
@@ -146,15 +146,21 @@
 
       function calculateSum(mouseX, mouseY) {
         let sum = 0;
+        let count = 0;
+        const lastTwoColumns = dataTable.rows[0].cells.length - 2;
+
         selectedCells.forEach(cell => {
-          const cellValue = parseFloat(cell.textContent);
-          if (!isNaN(cellValue)) {
-            sum += cellValue;
+          if (cell.cellIndex >= lastTwoColumns) {  // Only consider the last two columns
+            const cellValue = parseFloat(cell.textContent);
+            if (!isNaN(cellValue)) {
+              sum += cellValue;
+            }
           }
+          count++;
         });
-        if (sum > 0) {
-          showTooltip(mouseX, mouseY, 'Sum of selected numbers: ' + sum);
-        }
+
+        const tooltipContent = `Selected cells: ${count}\nSum of last two columns: ${sum}`;
+        showTooltip(mouseX, mouseY, tooltipContent);
       }
 
       function showTooltip(x, y, text) {

@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Table Selection and Copy</title>
+  <style>
+    table {
+      border-collapse: collapse;
+      width: 100%;
+    }
+    td, th {
+      border: 1px solid #ddd;
+      padding: 8px;
+      cursor: pointer;
+    }
+    td.selected {
+      background-color: #b0c4de;
+    }
+    .tooltip {
+      display: none;
+      position: absolute;
+      background-color: #333;
+      color: #fff;
+      padding: 5px;
+      border-radius: 5px;
+      font-size: 14px;
+      z-index: 1000;
+    }
+  </style>
+</head>
+<body>
+  <table id="dataTable">
+    <tr>
+      <td>A</td>
+      <td>B</td>
+      <td>C</td>
+      <!-- More columns as needed -->
+    </tr>
+    <tr>
+      <td>S1</td>
+      <td>5</td>
+      <td>6</td>
+      <!-- More columns as needed -->
+    </tr>
+  <tr>
+      <td>S2</td>
+      <td>5</td>
+      <td>6</td>
+      <!-- More columns as needed -->
+    </tr>
+    <!-- More rows as needed -->
+  </table>
+
+  <div id="tooltip" class="tooltip"></div>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const dataTable = document.getElementById('dataTable');
+      const tooltip = document.getElementById('tooltip');
+
+      let isMouseDown = false;
+      let startCell = null;
+      let endCell = null;
+      let selectedCells = [];
+
+      dataTable.addEventListener('mousedown', (event) => {
+        if (event.target.tagName === 'TD') {
+          isMouseDown = true;
+          startCell = event.target;
+          endCell = event.target;
+          updateSelection();
+          event.preventDefault();  // prevent text selection
+        }
+      });
+
+      dataTable.addEventListener('mouseover', (event) => {
+        if (isMouseDown && event.target.tagName === 'TD') {
+          endCell = event.target;
+          updateSelection();
+        }
+      });
+
+      document.addEventListener('mouseup', (event) => {
+        if (isMouseDown) {
+          isMouseDown = false;
+          calculateSum(event.pageX, event.pageY);  // Calculate sum when mouse is released
+        }
+      });
+
+      document.addEventListener('copy', (event) => {
+        if (selectedCells.length > 0) {
+          event.preventDefault();
+
+          // Create a 2D array for the selected cells' content
+          const selectedRows = [];
+          let startRow = Math.min(startCell.parentNode.rowIndex, endCell.parentNode.rowIndex);
+          let endRow = Math.max(startCell.parentNode.rowIndex, endCell.parentNode.rowIndex);
+          let startCol = Math.min(startCell.cellIndex, endCell.cellIndex);
+          let endCol = Math.max(startCell.cellIndex, endCell.cellIndex);
+
+          for (let i = startRow; i <= endRow; i++) {
+            const row = [];
+            for (let j = startCol; j <= endCol; j++) {
+              row.push(dataTable.rows[i].cells[j].textContent);
+            }
+            selectedRows.push(row.join('\t'));
+          }
+
+          const selectedText = selectedRows.join('\n');
+          event.clipboardData.setData('text/plain', selectedText);
+        }
+      });
+
+      function updateSelection() {
+        clearSelection();
+        selectedCells = getCellsInRange(startCell, endCell);
+        selectedCells.forEach(cell => cell.classList.add('selected'));
+      }
+
+      function clearSelection() {
+        selectedCells.forEach(cell => cell.classList.remove('selected'));
+        selectedCells = [];
+      }
+
+      function getCellsInRange(start, end) {
+        const cells = [];
+        const startRow = start.parentNode.rowIndex;
+        const startCol = start.cellIndex;
+        const endRow = end.parentNode.rowIndex;
+        const endCol = end.cellIndex;
+
+        const topRow = Math.min(startRow, endRow);
+        const bottomRow = Math.max(startRow, endRow);
+        const leftCol = Math.min(startCol, endCol);
+        const rightCol = Math.max(startCol, endCol);
+
+        for (let i = topRow; i <= bottomRow; i++) {
+          for (let j = leftCol; j <= rightCol; j++) {
+            cells.push(dataTable.rows[i].cells[j]);
+          }
+        }
+
+        return cells;
+      }
+
+      function calculateSum(mouseX, mouseY) {
+        let sum = 0;
+        selectedCells.forEach(cell => {
+          const cellValue = parseFloat(cell.textContent);
+          if (!isNaN(cellValue)) {
+            sum += cellValue;
+          }
+        });
+        if (sum > 0) {
+          showTooltip(mouseX, mouseY, 'Sum of selected numbers: ' + sum);
+        }
+      }
+
+      function showTooltip(x, y, text) {
+        tooltip.textContent = text;
+        tooltip.style.left = `${x + 15}px`;
+        tooltip.style.top = `${y + 15}px`;
+        tooltip.style.display = 'block';
+      }
+
+      document.addEventListener('mousedown', () => {
+        tooltip.style.display = 'none';  // Hide tooltip when starting a new selection
+      });
+    });
+  </script>
+</body>
+</html>
